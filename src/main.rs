@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -30,28 +30,32 @@ struct FinanceTracker {
 //     fn total_income(&self) -> f64;
 //     fn total_expense(&self) -> f64;
 //     fn balance(&self) -> f64;
-// }   
+// }
 
 impl FinanceTracker {
-    fn add_transaction(&mut self, amount: f64, category: String, transaction_type: TransactionType, description: String) {
+    fn add_transaction(
+        &mut self,
+        amount: f64,
+        category: String,
+        transaction_type: TransactionType,
+        description: String,
+    ) {
         let id = self.transactions.len() as u32 + 1;
-        let transaction = Transaction::new(
-            id,
-            amount,
-            category,
-            transaction_type,
-            description
-        );
+        let transaction = Transaction::new(id, amount, category, transaction_type, description);
         self.transactions.push(transaction);
     }
 
     fn total_balance(&self) -> f64 {
-        let income: f64 = self.transactions.iter()
+        let income: f64 = self
+            .transactions
+            .iter()
             .filter(|t| matches!(t.transaction_type, TransactionType::Income))
             .map(|t| t.amount)
             .sum();
 
-        let expense: f64 = self.transactions.iter()
+        let expense: f64 = self
+            .transactions
+            .iter()
             .filter(|t| matches!(t.transaction_type, TransactionType::Expense))
             .map(|t| t.amount)
             .sum();
@@ -80,7 +84,13 @@ impl FinanceTracker {
 }
 
 impl Transaction {
-    fn new(id: u32, amount: f64, category: String, transaction_type: TransactionType, description: String) -> Self {
+    fn new(
+        id: u32,
+        amount: f64,
+        category: String,
+        transaction_type: TransactionType,
+        description: String,
+    ) -> Self {
         Transaction {
             id,
             amount,
@@ -112,19 +122,32 @@ fn save_transactions(transactions: &Vec<Transaction>, file_path: &str) {
         .truncate(true)
         .open(file_path)
         .expect("Unable to open file for writing");
-    file.write_all(data.as_bytes()).expect("Unable to write data to file");
+    file.write_all(data.as_bytes())
+        .expect("Unable to write data to file");
 }
 
-
-
 fn main() {
-    let mut tracker = FinanceTracker { transactions: Vec::new() };
+    let mut tracker = FinanceTracker {
+        transactions: Vec::new(),
+    };
+
     let path = "transactions.json";
 
     tracker.transactions = load_transactions_from_file(path);
 
-    tracker.add_transaction(100.0, "Salary".to_string(), TransactionType::Income, "Monthly salary".to_string());
-    tracker.add_transaction(50.0, "Groceries".to_string(), TransactionType::Expense, "Weekly groceries".to_string());
+    tracker.add_transaction(
+        100.0,
+        "Salary".to_string(),
+        TransactionType::Income,
+        "Monthly salary".to_string(),
+    );
+
+    tracker.add_transaction(
+        50.0,
+        "Groceries".to_string(),
+        TransactionType::Expense,
+        "Weekly groceries".to_string(),
+    );
 
     println!("##### Personal Finance Tracker #####");
     println!("1. Add Income");
@@ -132,11 +155,14 @@ fn main() {
     println!("3. View Transactions");
     println!("4. View Total Balance");
     println!("5. Exit");
-    
+
     loop {
         println!("Enter your choice: ");
+
         let mut choice = String::new();
-        std::io::stdin().read_line(&mut choice).expect("Failed to read line");
+        std::io::stdin()
+            .read_line(&mut choice)
+            .expect("Failed to read line");
 
         match choice.trim() {
             "1" => {
@@ -175,17 +201,32 @@ fn main() {
 
 fn get_transaction_details() -> (f64, String, String) {
     println!("Enter amount: ");
+
     let mut amount_str = String::new();
-    std::io::stdin().read_line(&mut amount_str).expect("Failed to read line");
-    let amount: f64 = amount_str.trim().parse().expect("Please enter a valid number");
+
+    std::io::stdin()
+        .read_line(&mut amount_str)
+        .expect("Failed to read line");
+    let amount: f64 = amount_str
+        .trim()
+        .parse()
+        .expect("Please enter a valid number");
 
     println!("Enter category: ");
     let mut category = String::new();
-    std::io::stdin().read_line(&mut category).expect("Failed to read line");
+    std::io::stdin()
+        .read_line(&mut category)
+        .expect("Failed to read line");
 
     println!("Enter description: ");
     let mut description = String::new();
-    std::io::stdin().read_line(&mut description).expect("Failed to read line");
+    std::io::stdin()
+        .read_line(&mut description)
+        .expect("Failed to read line");
 
-    (amount, category.trim().to_string(), description.trim().to_string())
+    (
+        amount,
+        category.trim().to_string(),
+        description.trim().to_string(),
+    )
 }
